@@ -1,8 +1,9 @@
 
 #include "umalloc.h"
+#include "stdio.h" //
 
 //Place any variables needed here from umalloc.c as an extern.
-extern memory_block_t *first_head;
+extern memory_block_t *free_head;
 
 /*
  * check_heap -  used to check that the heap is still in a consistent state.
@@ -11,7 +12,40 @@ extern memory_block_t *first_head;
  * return code. Asserts are also a useful tool here.
  */
 int check_heap() {
-    // the following tests might be coalesced later, but will
+    int error = 0;
+    memory_block_t *test = free_head;
+    bool fail_1 = false, fail_2 = false, fail_3 = false, fail_4 = false;
+    while (test && test->next) {
+        // test for memory orders
+        fail_1 = fail_1 || ((char *)test->next) - ((char *)test) <= 0;
+        // test for no overlap
+        fail_2 = fail_2 || ((char *)test->next) - ((char *)test) < sizeof(memory_block_t) + get_size(test);
+        // test for no coalescence
+        fail_3 = fail_3 || ((char *)test->next) - ((char *)test) == sizeof(memory_block_t) + get_size(test);
+        // test for no mis-categorized nodes
+        fail_4 = fail_4 || is_allocated(test);
+        test = test->next;
+    }
+    if (fail_1) {
+        error += 1;
+    }
+    if (fail_2) {
+        error += 2;
+    }
+    if (fail_3) {
+        error += 4;
+    }
+    if (fail_4) {
+        error += 8;
+    }
+    if (error) {
+        printf("%d\n",error);
+    }
+    return error;
+
+
+
+/*    // the following tests might be coalesced later, but will
     // remain like this for now for the sake of readability--
     bool inconsistent = false;
     // 1: ensure that the memory list remains in memory order
@@ -41,5 +75,6 @@ int check_heap() {
         }
         test_four = test_four->next;
     }
-    return !inconsistent; //negate "inconsistent" to get "consistent"
+    return !inconsistent; //negate "inconsistent" to get "consistent"*/
+    return 1;
 }
