@@ -5,8 +5,7 @@
 #define ALIGN(size) (((size) + (ALIGNMENT-1)) & ~(ALIGNMENT-1))
 
 /*
- * memory_block_t - Represents a block of memory managed by the heap. The 
- * struct can be left as is, or modified for your design.
+ * memory_block_t - Represents a block of memory managed by the heap.
  * In the current design bit 0 is the allocated bit
  * bits 1-3 are unused.
  * and the remaining 60 bit represent the size.
@@ -22,14 +21,13 @@ void allocate(memory_block_t *block);
 void deallocate(memory_block_t *block);
 size_t get_size(memory_block_t *block);
 memory_block_t *get_next(memory_block_t *block);
-int put_block(memory_block_t *block, size_t size, bool alloc);
+void put_block(memory_block_t *block, size_t size, bool alloc);
 void *get_payload(memory_block_t *block);
 memory_block_t *get_block(void *payload);
 
 memory_block_t *find(size_t size);
 memory_block_t *extend(size_t size);
 memory_block_t *split(memory_block_t *block, size_t size);
-memory_block_t *coalesce(memory_block_t *block);
 
 
 // Portion that may not be edited

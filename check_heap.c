@@ -14,18 +14,20 @@ extern memory_block_t *free_head;
 int check_heap() {
     int error = 0;
     memory_block_t *test = free_head;
-    bool fail_1 = false, fail_2 = false, fail_3 = false, fail_4 = false;
+    bool fail_1 = false, fail_2 = false, fail_3 = false, fail_4 = false, fail_5 = false;
     while (test && test->next) {
-        // test for memory orders
-        fail_1 = fail_1 || ((char *)test->next) - ((char *)test) <= 0;
+        // test for no allocated
+        fail_1 = fail_1 || is_allocated(test);
+        // test for memory order
+        fail_2 = fail_2 || ((char *)test->next) - ((char *)test) <= 0;
         // test for no overlap
-        fail_2 = fail_2 || ((char *)test->next) - ((char *)test) < sizeof(memory_block_t) + get_size(test);
+        fail_3 = fail_3 || ((char *)test->next) - ((char *)test) < sizeof(memory_block_t) + get_size(test);
         // test for no coalescence
-        fail_3 = fail_3 || ((char *)test->next) - ((char *)test) == sizeof(memory_block_t) + get_size(test);
-        // test for no mis-categorized nodes
-        fail_4 = fail_4 || is_allocated(test);
-        test = test->next;
+        fail_4 = fail_4 || ((char *)test->next) - ((char *)test) == sizeof(memory_block_t) + get_size(test);
     }
+    // test that the free_head remains unchanged
+    fail_5 = fail_5 || get_size(free_head) == 0;
+    test = test->next;
     if (fail_1) {
         error += 1;
     }
@@ -38,8 +40,8 @@ int check_heap() {
     if (fail_4) {
         error += 8;
     }
-    if (error) {
-        printf("%d\n",error);
+    if (fail_5) {
+        error += 16;
     }
     return error;
 
