@@ -10,7 +10,12 @@ const char author[] = ANSI_BOLD ANSI_COLOR_RED "BRYCE RICHARDSON" ANSI_RESET;
  * The following helpers can be used to interact with the memory_block_t
  * struct, they can be adjusted as necessary.
  */
-// A pointer to the first block in the heap (in memory order)
+
+/* The heap is defined by a linked list of free blocks.
+ * free_head - is a pointer to the header node, which is created by uinit and never changed.
+ * Other nodes (memory_block_t structs) can be removed or added to this free list in memory order,
+ * by calling either the umalloc or ufree functions.
+ */
 memory_block_t *free_head; 
 
 /*
@@ -23,7 +28,7 @@ bool is_allocated(memory_block_t *block) {
 
 /*
  * allocate - marks a block as allocated.
- * design decision - null out the "next" field
+ *      Design decision to NULL out the "next" field.
  */
 void allocate(memory_block_t *block) {
     assert(block != NULL);
@@ -62,7 +67,6 @@ memory_block_t *get_next(memory_block_t *block) {
  * put_block - puts a block struct into memory at the specified address.
  * Initializes the size and allocated fields, along with NUlling out the next 
  * field.
- * design decision - have put_block return 0 if successful and -1 otherwise  
  */
 void put_block(memory_block_t *block, size_t size, bool alloc) {
     assert(block != NULL);
@@ -95,8 +99,8 @@ memory_block_t *get_block(void *payload) {
 
  /*
  * find - finds a free block that can satisfy the umalloc request.
- * design decision -    if an appropriate block cannot be found, return the final block
- *                      the final block will not be returned under any other circumstance
+ *      Design decision to return the final block in the free list if no appropriate blocks 
+ * can be found. The final block will not be returned under any other circumstance.
  */
 memory_block_t *find(size_t size) {
     memory_block_t *cmpr = free_head;
@@ -108,7 +112,7 @@ memory_block_t *find(size_t size) {
 
 /*
  * extend - extends the heap if more memory is required.
- * design decision - return an allocated block.
+ *      Design decision to return an allocated block.
  */
 memory_block_t *extend(size_t size) {
     const int max_call = 16 * PAGESIZE - sizeof(memory_block_t);
@@ -118,7 +122,6 @@ memory_block_t *extend(size_t size) {
     while (call >= max_call) { // decrease the amount of heap being added if it exceeds the maximum
         call = call >> 1;
     }
-    
     memory_block_t *ptr = csbrk(sizeof(memory_block_t) + call);
     put_block(ptr, call, true);
     if (size == call) {
@@ -142,8 +145,8 @@ memory_block_t *split(memory_block_t *block, size_t size) {
 }
 
 /*
- * uinit - Used initialize metadata required to manage the heap
- * along with allocating initial memory.
+ * uinit - Creates the header node, returning 0 if successful
+ * and -1 otherwise.
  */
 int uinit() {
     free_head = csbrk(sizeof(memory_block_t));
@@ -155,9 +158,11 @@ int uinit() {
 }
 
 /*
- * umalloc -  allocates size bytes and returns a pointer to the allocated memory.
+ * umalloc - allocates size bytes and returns a pointer to the allocated memory.
+ *      Finds an appropriate memory block and removes it from the heap, or creates a new one. 
  */
 void *umalloc(size_t size) {
+    assert(free_head);
     size = ALIGN(size);
     memory_block_t *cmpr = find(size);
     if (!cmpr->next) {
@@ -174,10 +179,13 @@ void *umalloc(size_t size) {
 }
 
 /*
- * ufree -  frees the memory space pointed to by ptr, which must have been called
+ * ufree - frees the memory space pointed to by ptr, which must have been called
  * by a previous call to malloc.
+ *      Will automatically coalesce any contiguous blocks of memory that are
+ * added to the heap.
  */
 void ufree(void *ptr) {
+    assert(free_head);
     memory_block_t *ptrt = get_block(ptr);
     if (is_allocated(ptrt)) {
         deallocate(ptrt);

@@ -13,12 +13,13 @@ extern memory_block_t *free_head;
  */
 int check_heap() {
     int error = 0;
-    memory_block_t *test = free_head;
+    memory_block_t *test = free_head->next;
     bool fail_1 = false, fail_2 = false, fail_3 = false, fail_4 = false, fail_5 = false;
     while (test && test->next) {
         // test for no allocated
         fail_1 = fail_1 || is_allocated(test);
         // test for memory order
+        if (test != free_head) {
         fail_2 = fail_2 || ((char *)test->next) - ((char *)test) <= 0;
         // test for no overlap
         fail_3 = fail_3 || ((char *)test->next) - ((char *)test) < sizeof(memory_block_t) + get_size(test);
