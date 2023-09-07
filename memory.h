@@ -6,8 +6,7 @@
 
 /*
  * memory_block_t - Represents a block of memory managed by the heap.
- * In the current design bit 0 is the allocated bit
- * bits 1-3 are unused.
+ * In the current design bit 0 is the allocated bit bits 1-3 are unused.
  * and the remaining 60 bit represent the size.
  */
 typedef struct memory_block_struct {
@@ -15,7 +14,6 @@ typedef struct memory_block_struct {
     struct memory_block_struct *next;
 } memory_block_t;
 
-// Helper Functions, this may be editted if you change the signature in umalloc.c
 bool is_allocated(memory_block_t *block);
 void allocate(memory_block_t *block);
 void deallocate(memory_block_t *block);
@@ -29,8 +27,6 @@ memory_block_t *find(size_t size);
 memory_block_t *extend(size_t size);
 memory_block_t *split(memory_block_t *block, size_t size);
 
-
-// Portion that may not be edited
 int uinit();
 void *umalloc(size_t size);
 void ufree(void *ptr);

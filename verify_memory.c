@@ -1,17 +1,13 @@
 
-#include "umalloc.h"
-#include "stdio.h" //
+#include "memory.h"
+#include "stdio.h"
 
-//Place any variables needed here from umalloc.c as an extern.
 extern memory_block_t *free_head;
 
 /*
- * check_heap -  used to check that the heap is still in a consistent state.
- * Required to be completed for checkpoint 1.
- * Should return 0 if the heap is still consistent, otherwise return a non-zero
- * return code. Asserts are also a useful tool here.
+ * verify_memory -  used to check that the heap is still in a consistent state.
  */
-int check_heap() {
+int verify_memory() {
     int error = 0;
     memory_block_t *test = free_head->next;
     bool fail_1 = false, fail_2 = false, fail_3 = false, fail_4 = false, fail_5 = false;

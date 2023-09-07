@@ -1,20 +1,10 @@
-#include "umalloc.h"
+#include "memory.h"
 #include "csbrk.h"
-#include "ansicolors.h"
 #include <stdio.h>
 #include <assert.h>
 
-const char author[] = ANSI_BOLD ANSI_COLOR_RED "BRYCE RICHARDSON" ANSI_RESET;
-
 /*
- * The following helpers can be used to interact with the memory_block_t
- * struct, they can be adjusted as necessary.
- */
-
-/* The heap is defined by a linked list of free blocks.
- * free_head - is a pointer to the header node, which is created by uinit and never changed.
- * Other nodes (memory_block_t structs) can be removed or added to this free list in memory order,
- * by calling either the umalloc or ufree functions.
+ * free_head - the header node.
  */
 memory_block_t *free_head; 
 
@@ -28,7 +18,7 @@ bool is_allocated(memory_block_t *block) {
 
 /*
  * allocate - marks a block as allocated.
- *      Design decision to NULL out the "next" field.
+ * Design decision to NULL out the "next" field.
  */
 void allocate(memory_block_t *block) {
     assert(block != NULL);
@@ -92,14 +82,9 @@ memory_block_t *get_block(void *payload) {
     return ((memory_block_t *)payload) - 1;
 }
 
-/*
- * The following are helper functions that can be implemented to assist in your
- * design, but they are not required. 
- */
-
  /*
  * find - finds a free block that can satisfy the umalloc request.
- *      Design decision to return the final block in the free list if no appropriate blocks 
+ * Design decision to return the final block in the free list if no appropriate blocks 
  * can be found. The final block will not be returned under any other circumstance.
  */
 memory_block_t *find(size_t size) {
